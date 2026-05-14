@@ -30,6 +30,10 @@ Each daily issue includes:
 
 If no open alerts are found: A celebratory message encouraging continued good security hygiene!
 
+## 📐 Architecture & Design
+
+See [docs/DESIGN.md](docs/DESIGN.md) for the full technical design, Mermaid workflow diagram, API strategy, and future enhancements.
+
 ## 🛠️ Setup Guide
 
 ### 1. Create a Personal Access Token (PAT)
