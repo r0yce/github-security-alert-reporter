@@ -1,11 +1,10 @@
-const { context, core } = require('@actions/github');
-
 /**
  * Full Daily Security Alerts Report Generator
- * - GraphQL first (repos, Dependabot, Code Scanning, contributors)
- * - REST only for Secret Scanning (best path + location support)
+ * GraphQL-first + REST for Secret Scanning
+ * Works with actions/github-script@v9
  */
-async function generateReport(github) {
+
+async function generateReport(github, context, core) {
   const today = new Date().toISOString().split('T')[0];
   const reportTitle = `Daily Security Alerts Report - ${today}`;
 
@@ -133,7 +132,7 @@ async function generateReport(github) {
       if (alerts.length) console.log(`   🛡️ ${alerts.length} Code Scanning alerts`);
     } catch (e) { console.error(`   Code scanning error: ${e.message}`); }
 
-    // --- Secret Scanning (REST + locations for exact path) ---
+    // --- Secret Scanning (REST + locations) ---
     try {
       const list = await github.rest.secretScanning.listAlertsForRepo({
         owner, repo: repoName, state: 'open', per_page: 100
@@ -147,7 +146,7 @@ async function generateReport(github) {
           });
           if (locs.data?.[0]?.details?.path) path = locs.data[0].details.path;
         } catch (_) {}
-        const snippet = a.secret ? a.secret.slice(0, 20) + '…' : 'REDACTED (GitHub does not expose full value)';
+        const snippet = a.secret ? a.secret.slice(0, 20) + '…' : 'REDACTED';
         repoFindings.push({
           type: 'Secret Scanning',
           emoji: '🔐',
@@ -211,7 +210,7 @@ async function generateReport(github) {
   const grandTotal = totalVuln + totalCode + totalSecret;
   console.log(`\n✅ Done. Total alerts found: ${grandTotal}`);
 
-  // 3. Build beautiful Markdown report
+  // 3. Build Markdown report
   let body = `# ${reportTitle}\n\n`;
   body += `**Generated:** ${new Date().toISOString()}\n**Repos scanned:** ${allRepos.length}\n**Total open alerts:** ${grandTotal}\n\n`;
 
